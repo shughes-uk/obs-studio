@@ -188,7 +188,7 @@ static inline int process_packets(media_remux_job_t job,
 				job->ofmt_ctx->streams[pkt.stream_index]);
 
 		ret = av_interleaved_write_frame(job->ofmt_ctx, &pkt);
-		av_free_packet(&pkt);
+		av_packet_unref(&pkt);
 
 		if (ret < 0) {
 			blog(LOG_ERROR, "media_remux: Error muxing packet: %s",

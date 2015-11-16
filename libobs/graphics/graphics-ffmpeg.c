@@ -176,7 +176,7 @@ static bool ffmpeg_image_decode(struct ffmpeg_image *info, uint8_t *out,
 	success = ffmpeg_image_reformat_frame(info, frame, out, linesize);
 
 fail:
-	av_free_packet(&packet);
+	av_packet_unref(&packet);
 	av_frame_free(&frame);
 	return success;
 }
