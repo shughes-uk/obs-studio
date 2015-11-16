@@ -232,7 +232,7 @@ static bool do_aac_encode(struct aac_encoder *enc,
 	packet->type = OBS_ENCODER_AUDIO;
 	packet->timebase_num = 1;
 	packet->timebase_den = (int32_t)enc->context->sample_rate;
-	av_free_packet(&avpacket);
+	av_packet_unref(&avpacket);
 	return true;
 }
 

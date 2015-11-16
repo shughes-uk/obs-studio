@@ -836,7 +836,7 @@ static int process_packet(struct ffmpeg_output *output)
 
 	ret = av_interleaved_write_frame(output->ff_data.output, &packet);
 	if (ret < 0) {
-		av_free_packet(&packet);
+		av_packet_unref(&packet);
 		blog(LOG_WARNING, "receive_audio: Error writing packet: %s",
 				av_err2str(ret));
 		return ret;
@@ -1011,7 +1011,7 @@ static void ffmpeg_deactivate(struct ffmpeg_output *output)
 	pthread_mutex_lock(&output->write_mutex);
 
 	for (size_t i = 0; i < output->packets.num; i++)
-		av_free_packet(output->packets.array+i);
+		av_packet_unref(output->packets.array+i);
 	da_free(output->packets);
 
 	pthread_mutex_unlock(&output->write_mutex);
