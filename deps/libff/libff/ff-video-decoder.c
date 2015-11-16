@@ -92,7 +92,7 @@ void *ff_video_decoder_thread(void *opaque_video_decoder)
 			if (decoder->clock != NULL)
 				ff_clock_release(&decoder->clock);
 			decoder->clock = ff_clock_move(&packet.clock);
-			av_free_packet(&packet.base);
+			av_packet_unref(&packet.base);
 			continue;
 		}
 
@@ -128,7 +128,7 @@ void *ff_video_decoder_thread(void *opaque_video_decoder)
 			av_frame_unref(frame);
 		}
 
-		av_free_packet(&packet.base);
+		av_packet_unref(&packet.base);
 	}
 
 	if (decoder->clock != NULL)

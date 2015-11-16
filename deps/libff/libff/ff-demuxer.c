@@ -600,7 +600,7 @@ static void *demux_thread(void *opaque)
 		else if (ff_decoder_accept(demuxer->audio_decoder, &packet))
 			continue;
 		else
-			av_free_packet(&packet.base);
+			av_packet_unref(&packet.base);
 	}
 	if (demuxer->audio_decoder != NULL)
 		demuxer->audio_decoder->eof = true;

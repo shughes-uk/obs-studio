@@ -53,7 +53,7 @@ void packet_queue_free(struct ff_packet_queue *q)
 	pthread_mutex_destroy(&q->mutex);
 	pthread_cond_destroy(&q->cond);
 
-	av_free_packet(&q->flush_packet.base);
+	av_packet_unref(&q->flush_packet.base);
 }
 
 int packet_queue_put(struct ff_packet_queue *q, struct ff_packet *packet)
@@ -61,7 +61,7 @@ int packet_queue_put(struct ff_packet_queue *q, struct ff_packet *packet)
 	struct ff_packet_list *new_packet;
 
 	if (packet != &q->flush_packet
-			&& av_dup_packet(&packet->base) < 0)
+			&& av_packet_ref(&packet->base) < 0)
 		return FF_PACKET_FAIL;
 
 	new_packet = av_malloc(sizeof(struct ff_packet_list));
@@ -146,7 +146,7 @@ void packet_queue_flush(struct ff_packet_queue *q)
 	for (packet = q->first_packet; packet != NULL;
 			packet = q->first_packet) {
 		q->first_packet = packet->next;
-		av_free_packet(&packet->packet.base);
+		av_packet_unref(&packet->packet.base);
 		if (packet->packet.clock != NULL)
 			ff_clock_release(&packet->packet.clock);
 		av_freep(&packet);

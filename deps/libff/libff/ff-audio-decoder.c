@@ -45,7 +45,7 @@ static bool handle_reset_packet(struct ff_decoder *decoder,
 	if (decoder->clock != NULL)
 		ff_clock_release(&decoder->clock);
 	decoder->clock = packet->clock;
-	av_free_packet(&packet->base);
+	av_packet_unref(&packet->base);
 
 	// not a real packet, so try to get another packet
 	if (packet_queue_get(&decoder->packet_queue, packet, 1)
@@ -170,7 +170,7 @@ void *ff_audio_decoder_thread(void *opaque_audio_decoder)
 	while (!decoder->abort) {
 		if (decode_frame(decoder, &packet, frame, &frame_complete)
 				< 0) {
-			av_free_packet(&packet.base);
+			av_packet_unref(&packet.base);
 			continue;
 		}
 
@@ -186,7 +186,7 @@ void *ff_audio_decoder_thread(void *opaque_audio_decoder)
 			av_frame_unref(frame);
 		}
 
-		av_free_packet(&packet.base);
+		av_packet_unref(&packet.base);
 	}
 
 	if (decoder->clock != NULL)
