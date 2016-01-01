@@ -30,7 +30,15 @@ else()
 endif()
 
 find_package(Qt5Widgets ${FIND_MODE})
-
+find_package(Qt5Websockets ${FIND_MODE})
+if(NOT Qt5Websockets_FOUND)
+	if (ENABLE_UI)
+		message(FATAL_ERROR "Failed to find Qt5 Websockets")
+	else()
+		message(STATUS "Qt5 Websockets not found - UI disabled")
+		return()
+	endif()
+endif()
 if(NOT Qt5Widgets_FOUND)
 	if (ENABLE_UI)
 		message(FATAL_ERROR "Failed to find Qt5")
@@ -41,6 +49,8 @@ if(NOT Qt5Widgets_FOUND)
 endif()
 
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/libobs")
+
+include_directories(${OBS_JANSSON_INCLUDE_DIRS})
 
 find_package(Libcurl REQUIRED)
 include_directories(${LIBCURL_INCLUDE_DIRS})
@@ -79,11 +89,11 @@ elseif(UNIX)
 		platform-x11.cpp)
 
 	find_package(XCB COMPONENTS XCB REQUIRED RANDR REQUIRED XINERAMA REQUIRED)
-	
+
 	include_directories(
 		${XCB_INCLUDE_DIRS}
 		${X11_XCB_INCLUDE_DIRS})
-		
+
 	add_definitions(
 		${XCB_DEFINITIONS}
 		${X11_XCB_DEFINITIONS})
@@ -97,6 +107,8 @@ endif()
 set(obs_SOURCES
 	${obs_PLATFORM_SOURCES}
 	obs-app.cpp
+	websocket.cpp
+	websocket_messagehandling.cpp
 	window-basic-main.cpp
 	window-basic-filters.cpp
 	window-basic-settings.cpp
@@ -139,6 +151,8 @@ set(obs_SOURCES
 set(obs_HEADERS
 	obs-app.hpp
 	platform.hpp
+	websocket.h
+	websocket_messagehandling.h
 	window-main.hpp
 	window-basic-main.hpp
 	window-basic-filters.hpp
@@ -219,8 +233,12 @@ target_link_libraries(obs
 	libobs
 	libff
 	Qt5::Widgets
+	Qt5::WebSockets
 	${LIBCURL_LIBRARIES}
-	${obs_PLATFORM_LIBRARIES})
+	${obs_PLATFORM_LIBRARIES}
+	${OBS_JANSSON_IMPORT}
+)
+
 
 define_graphic_modules(obs)
 

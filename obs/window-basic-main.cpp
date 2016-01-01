@@ -49,12 +49,15 @@
 #include "remote-text.hpp"
 
 #include "ui_OBSBasic.h"
-
 #include <fstream>
 #include <sstream>
 
 #include <QScreen>
 #include <QWindow>
+
+#include <websocket.h>
+
+#define PREVIEW_EDGE_SIZE 10
 
 using namespace std;
 
@@ -112,7 +115,8 @@ static QList<QKeySequence> DeleteKeys;
 
 OBSBasic::OBSBasic(QWidget *parent)
 	: OBSMainWindow  (parent),
-	  ui             (new Ui::OBSBasic)
+	  ui             (new Ui::OBSBasic),
+	  eServer		(1000)
 {
 	ui->setupUi(this);
 	ui->previewDisabledLabel->setVisible(false);
@@ -226,6 +230,10 @@ OBSBasic::OBSBasic(QWidget *parent)
 	addNudge(Qt::Key_Down, SLOT(NudgeDown()));
 	addNudge(Qt::Key_Left, SLOT(NudgeLeft()));
 	addNudge(Qt::Key_Right, SLOT(NudgeRight()));
+	
+	connect(this, &OBSBasic::streamingStarted, &eServer, &EchoServer::sendStreamStarted);
+	connect(&eServer, &EchoServer::startStreamRequested, this, &OBSBasic::on_streamButton_clicked);
+	
 }
 
 static void SaveAudioDevice(const char *name, int channel, obs_data_t *parent,
@@ -3271,7 +3279,7 @@ void OBSBasic::StreamingStart()
 		ui->profileMenu->setEnabled(false);
 		App()->IncrementSleepInhibition();
 	}
-
+	emit streamingStarted();
 	blog(LOG_INFO, STREAMING_START);
 }
 

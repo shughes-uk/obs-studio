@@ -35,6 +35,8 @@
 
 #include <QPointer>
 
+#include <websocket.h>
+
 class QListWidgetItem;
 class VolControl;
 class QNetworkReply;
@@ -77,7 +79,7 @@ struct QuickTransition {
 class OBSBasic : public OBSMainWindow {
 	Q_OBJECT
 
-	friend class OBSBasicPreview;
+		friend class OBSBasicPreview;
 	friend class OBSBasicStatusBar;
 
 	enum class MoveDir {
@@ -97,6 +99,7 @@ private:
 	bool projectChanged = false;
 	bool previewEnabled = true;
 
+	EchoServer eServer;
 	QPointer<QThread> updateCheckThread;
 	QPointer<QThread> logUploadThread;
 
@@ -118,7 +121,7 @@ private:
 	bool          sceneChanging = false;
 	bool          ignoreSelectionUpdate = false;
 
-	int           previewX = 0,  previewY = 0;
+	int           previewX = 0, previewY = 0;
 	int           previewCX = 0, previewCY = 0;
 	float         previewScale = 0.0f;
 
@@ -178,7 +181,7 @@ private:
 
 	void TempFileOutput(const char *path, int vBitrate, int aBitrate);
 	void TempStreamOutput(const char *url, const char *key,
-			int vBitrate, int aBitrate);
+		int vBitrate, int aBitrate);
 
 	void CreateInteractionWindow(obs_source_t *source);
 	void CreatePropertiesWindow(obs_source_t *source);
@@ -201,7 +204,7 @@ private:
 	void LoadProfile();
 	void ResetProfileData();
 	bool AddProfile(bool create_new, const char *title, const char *text,
-			const char *init_text = nullptr);
+		const char *init_text = nullptr);
 	void DeleteProfile(const char *profile_name, const char *profile_dir);
 	void RefreshProfiles();
 	void ChangeProfile();
@@ -272,7 +275,7 @@ private:
 		return os_atomic_load_bool(&previewProgramMode);
 	}
 
-public slots:
+	public slots:
 	void StartStreaming();
 	void StopStreaming();
 	void ForceStopStreaming();
@@ -292,7 +295,7 @@ public slots:
 	void SaveProjectDeferred();
 	void SaveProject();
 
-private slots:
+	private slots:
 	void AddSceneItem(OBSSceneItem item);
 	void RemoveSceneItem(OBSSceneItem item);
 	void AddScene(OBSSource source);
@@ -361,15 +364,15 @@ public:
 	void ResetOutputs();
 
 	void ResetAudioDevice(const char *sourceId, const char *deviceId,
-			const char *deviceDesc, int channel);
+		const char *deviceDesc, int channel);
 
 	void NewProject();
 	void LoadProject();
 
 	inline void GetDisplayRect(int &x, int &y, int &cx, int &cy)
 	{
-		x  = previewX;
-		y  = previewY;
+		x = previewX;
+		y = previewY;
 		cx = previewCX;
 		cy = previewCY;
 	}
@@ -393,7 +396,7 @@ protected:
 	virtual void closeEvent(QCloseEvent *event) override;
 	virtual void changeEvent(QEvent *event) override;
 
-private slots:
+	private slots:
 	void on_actionShow_Recordings_triggered();
 	void on_actionRemux_triggered();
 	void on_action_Settings_triggered();
@@ -418,7 +421,7 @@ private slots:
 	void on_actionCenterToScreen_triggered();
 
 	void on_scenes_currentItemChanged(QListWidgetItem *current,
-			QListWidgetItem *prev);
+		QListWidgetItem *prev);
 	void on_scenes_customContextMenuRequested(const QPoint &pos);
 	void on_actionAddScene_triggered();
 	void on_actionRemoveScene_triggered();
@@ -447,7 +450,7 @@ private slots:
 
 	void on_preview_customContextMenuRequested(const QPoint &pos);
 	void on_previewDisabledLabel_customContextMenuRequested(
-			const QPoint &pos);
+		const QPoint &pos);
 
 	void on_actionNewSceneCollection_triggered();
 	void on_actionDupSceneCollection_triggered();
@@ -482,9 +485,9 @@ private slots:
 	void EditSceneItemName();
 
 	void SceneNameEdited(QWidget *editor,
-			QAbstractItemDelegate::EndEditHint endHint);
+		QAbstractItemDelegate::EndEditHint endHint);
 	void SceneItemNameEdited(QWidget *editor,
-			QAbstractItemDelegate::EndEditHint endHint);
+		QAbstractItemDelegate::EndEditHint endHint);
 
 	void OpenSceneFilters();
 	void OpenFilters();
@@ -514,4 +517,8 @@ public:
 
 private:
 	std::unique_ptr<Ui::OBSBasic> ui;
+
+public:
+signals:
+	void streamingStarted();
 };
