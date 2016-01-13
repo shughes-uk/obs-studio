@@ -34,6 +34,7 @@
 #include <util/util.hpp>
 
 #include <QPointer>
+#include <QThread>
 
 #include <websocket.h>
 
@@ -99,7 +100,8 @@ private:
 	bool projectChanged = false;
 	bool previewEnabled = true;
 
-	EchoServer eServer;
+	QPointer<OBSWebsocketServer> WebSocketServ;
+
 	QPointer<QThread> updateCheckThread;
 	QPointer<QThread> logUploadThread;
 
@@ -186,6 +188,7 @@ private:
 	void CreateInteractionWindow(obs_source_t *source);
 	void CreatePropertiesWindow(obs_source_t *source);
 	void CreateFiltersWindow(obs_source_t *source);
+	void CreateWebSocketServer();
 
 	void CloseDialogs();
 	void ClearSceneData();
@@ -519,6 +522,13 @@ private:
 	std::unique_ptr<Ui::OBSBasic> ui;
 
 public:
+	void change_scene_by_name(char *name);
 signals:
-	void streamingStarted();
+	void WS_Scene_Selection_Changed(OBSSource source);
+	void WS_Source_Or_Scene_Changed();
+	void WS_Streaming_Started();
+	void WS_Recording_Started();
+	void WS_Recording_Stopped();
+	void WS_Streaming_Stopped();
+	void WS_Added_Scene(OBSSource source);
 };

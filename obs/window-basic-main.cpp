@@ -115,8 +115,8 @@ static QList<QKeySequence> DeleteKeys;
 
 OBSBasic::OBSBasic(QWidget *parent)
 	: OBSMainWindow  (parent),
-	  ui             (new Ui::OBSBasic),
-	  eServer		(1000)
+	  WebSocketServ	 (),
+	  ui             (new Ui::OBSBasic)
 {
 	ui->setupUi(this);
 	ui->previewDisabledLabel->setVisible(false);
@@ -230,10 +230,6 @@ OBSBasic::OBSBasic(QWidget *parent)
 	addNudge(Qt::Key_Down, SLOT(NudgeDown()));
 	addNudge(Qt::Key_Left, SLOT(NudgeLeft()));
 	addNudge(Qt::Key_Right, SLOT(NudgeRight()));
-	
-	connect(this, &OBSBasic::streamingStarted, &eServer, &EchoServer::sendStreamStarted);
-	connect(&eServer, &EchoServer::startStreamRequested, this, &OBSBasic::on_streamButton_clicked);
-	
 }
 
 static void SaveAudioDevice(const char *name, int channel, obs_data_t *parent,
@@ -1034,6 +1030,20 @@ void OBSBasic::OBSInit()
 	}
 
 	ui->mainSplitter->setSizes(defSizes);
+	CreateWebSocketServer();
+	OBSBasic::connect(this, &OBSBasic::WS_Recording_Started, WebSocketServ, &OBSWebsocketServer::OBS_Started_Recording);
+	OBSBasic::connect(this, &OBSBasic::WS_Streaming_Started, WebSocketServ, &OBSWebsocketServer::OBS_Started_Streaming);
+
+	OBSBasic::connect(this, &OBSBasic::WS_Recording_Stopped, WebSocketServ, &OBSWebsocketServer::OBS_Stopped_Recording);
+	OBSBasic::connect(this, &OBSBasic::WS_Streaming_Stopped, WebSocketServ, &OBSWebsocketServer::OBS_Stopped_Streaming);
+
+	OBSBasic::connect(this, &OBSBasic::WS_Scene_Selection_Changed, WebSocketServ, &OBSWebsocketServer::OBS_Scene_Selection_Changed);
+
+	OBSBasic::connect(WebSocketServ, &OBSWebsocketServer::OBS_Start_Stop_Stream, this, &OBSBasic::on_streamButton_clicked);
+	OBSBasic::connect(WebSocketServ, &OBSWebsocketServer::OBS_Start_Stop_Stream, this, &OBSBasic::on_recordButton_clicked);
+
+	OBSBasic::connect(this, &OBSBasic::WS_Source_Or_Scene_Changed, WebSocketServ, &OBSWebsocketServer::OBS_Scene_Or_Source_Changed);
+
 }
 
 void OBSBasic::InitHotkeys()
@@ -1456,6 +1466,15 @@ void OBSBasic::CreateFiltersWindow(obs_source_t *source)
 	filters->setAttribute(Qt::WA_DeleteOnClose, true);
 }
 
+void OBSBasic::CreateWebSocketServer()
+{
+	if (!WebSocketServ)
+	{
+		WebSocketServ = new OBSWebsocketServer();
+	}
+
+}
+
 /* Qt callbacks for invokeMethod */
 
 void OBSBasic::AddScene(OBSSource source)
@@ -1520,6 +1539,7 @@ void OBSBasic::AddScene(OBSSource source)
 			}, &addSceneItem);
 
 	SaveProject();
+	//emit WS_Source_Or_Scene_Changed();
 }
 
 void OBSBasic::RemoveScene(OBSSource source)
@@ -1545,6 +1565,7 @@ void OBSBasic::RemoveScene(OBSSource source)
 	}
 
 	SaveProject();
+	//emit WS_Source_Or_Scene_Changed();
 }
 
 void OBSBasic::AddSceneItem(OBSSceneItem item)
@@ -1555,6 +1576,7 @@ void OBSBasic::AddSceneItem(OBSSceneItem item)
 		InsertSceneItem(item);
 
 	SaveProject();
+	//emit WS_Source_Or_Scene_Changed();
 }
 
 void OBSBasic::RemoveSceneItem(OBSSceneItem item)
@@ -1573,6 +1595,7 @@ void OBSBasic::RemoveSceneItem(OBSSceneItem item)
 	}
 
 	SaveProject();
+	//emit WS_Source_Or_Scene_Changed();
 }
 
 void OBSBasic::UpdateSceneSelection(OBSSource source)
@@ -1594,7 +1617,10 @@ void OBSBasic::UpdateSceneSelection(OBSSource source)
 
 			UpdateSources(scene);
 		}
+		emit WS_Scene_Selection_Changed(source);
 	}
+	
+
 }
 
 static void RenameListValues(QListWidget *listWidget, const QString &newName,
@@ -1639,6 +1665,7 @@ void OBSBasic::SelectSceneItem(OBSScene scene, OBSSceneItem item, bool select)
 		witem->setSelected(select);
 		break;
 	}
+	//emit WS_Source_Or_Scene_Changed();
 }
 
 void OBSBasic::GetAudioSourceFilters()
@@ -3279,7 +3306,7 @@ void OBSBasic::StreamingStart()
 		ui->profileMenu->setEnabled(false);
 		App()->IncrementSleepInhibition();
 	}
-	emit streamingStarted();
+	emit WS_Streaming_Started();
 	blog(LOG_INFO, STREAMING_START);
 }
 
@@ -3333,6 +3360,8 @@ void OBSBasic::StreamingStop(int code)
 		startStreamMenu->deleteLater();
 		startStreamMenu = nullptr;
 	}
+	emit WS_Streaming_Stopped();
+
 }
 
 void OBSBasic::StartRecording()
@@ -3341,6 +3370,7 @@ void OBSBasic::StartRecording()
 
 	if (!outputHandler->RecordingActive())
 		outputHandler->StartRecording();
+	emit WS_Recording_Started();
 }
 
 void OBSBasic::StopRecording()
@@ -3354,6 +3384,7 @@ void OBSBasic::StopRecording()
 		ui->profileMenu->setEnabled(true);
 		App()->DecrementSleepInhibition();
 	}
+	emit WS_Recording_Stopped();
 }
 
 void OBSBasic::RecordingStart()
@@ -3967,3 +3998,4 @@ int OBSBasic::GetProfilePath(char *path, size_t size, const char *file) const
 
 	return snprintf(path, size, "%s/%s/%s", profiles_path, profile, file);
 }
+

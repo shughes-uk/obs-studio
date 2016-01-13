@@ -86,20 +86,20 @@ include (CheckSymbolExists)
 if (MSVC)
    # Turn off Microsofts "security" warnings.
    add_definitions( "/W3 /D_CRT_SECURE_NO_WARNINGS /wd4005 /wd4996 /nologo" )
-   
+
    # Disabled by OBS, options already set by top level CMakeLists
    if (FALSE)
       set(CMAKE_C_FLAGS_RELEASE "/MT")
       set(CMAKE_C_FLAGS_DEBUG "/MTd")
    endif()
-   
+
 endif()
 
 if (NOT WIN32 AND NOT APPLE)
    set(CMAKE_C_FLAGS "-fPIC")
 endif()
 
-   
+
 
 # Check for the int-type includes
 check_include_files (sys/types.h HAVE_SYS_TYPES_H)
@@ -294,7 +294,7 @@ endif ()
 #         ${CMAKE_CURRENT_SOURCE_DIR}/src/jansson.h
 #         DESTINATION include)
 
-#install (FILES 
+#install (FILES
 #         ${CMAKE_CURRENT_BINARY_DIR}/jansson.pc
 #         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
@@ -305,12 +305,12 @@ if (FALSE)
    find_package(Sphinx)
 
    if (NOT SPHINX_FOUND)
-      message(WARNING "Sphinx not found. Cannot generate documentation! 
+      message(WARNING "Sphinx not found. Cannot generate documentation!
       Set -DBUILD_DOCS=0 to get rid of this message.")
    else()
       if (Sphinx_VERSION_STRING VERSION_LESS 1.0)
-         message(WARNING "Your Sphinx version is too old! 
-               This project requires Sphinx v1.0 or above to produce 
+         message(WARNING "Your Sphinx version is too old!
+               This project requires Sphinx v1.0 or above to produce
                proper documentation (you have v${Sphinx_VERSION_STRING}).
                You will get output but it will have errors.")
       endif()
@@ -363,7 +363,7 @@ if (FALSE)
             list(APPEND DOC_TARGETS latex)
          endif()
       endif()
-      
+
       # The doc target will build all documentation targets.
       add_custom_target(doc)
 
@@ -468,7 +468,7 @@ if (FALSE)
        endforeach ()
    endforeach ()
 
-   add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} 
+   add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND}
                      DEPENDS json_process ${api_tests})
 endif ()
 

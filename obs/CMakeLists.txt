@@ -51,6 +51,7 @@ endif()
 include_directories(SYSTEM "${CMAKE_SOURCE_DIR}/libobs")
 
 include_directories(${OBS_JANSSON_INCLUDE_DIRS})
+include_directories(${LIBWEBSOCKETS_INCLUDE_DIRS})
 
 find_package(Libcurl REQUIRED)
 include_directories(${LIBCURL_INCLUDE_DIRS})
@@ -237,7 +238,13 @@ target_link_libraries(obs
 	${LIBCURL_LIBRARIES}
 	${obs_PLATFORM_LIBRARIES}
 	${OBS_JANSSON_IMPORT}
+	${OBS_LIBWEBSOCKETS_IMPORT}
 )
+message(STATUS "Using system libwebsockets a 	${OBS_JANSSON_IMPORT}")
+message(STATUS "Using system libwebsockets b 	${OBS_LIBWEBSOCKETS_IMPORT}")
+message(STATUS "Using system libwebsockets c 	${LIBWEBSOCKETS_INCLUDE_DIRS}")
+message(STATUS "Using system libwebsockets d 	${OBS_JANSSON_INCLUDE_DIRS}")
+
 
 
 define_graphic_modules(obs)
