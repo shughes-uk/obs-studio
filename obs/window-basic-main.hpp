@@ -226,6 +226,8 @@ private:
 	obs_source_t *FindTransition(const char *name);
 	void SetTransition(obs_source_t *transition);
 	OBSSource GetCurrentTransition();
+	obs_data_array_t *SaveTransitions();
+	void LoadTransitions(obs_data_array_t *transitions);
 
 	obs_source_t *fadeTransition;
 
@@ -320,6 +322,8 @@ private:
 
 	void ProcessHotkey(obs_hotkey_id id, bool pressed);
 
+	void AddTransition();
+	void RenameTransition();
 	void TransitionClicked();
 	void TransitionStopped();
 	void TriggerQuickTransition(int id);
@@ -331,7 +335,7 @@ private:
 	static void SceneItemRemoved(void *data, calldata_t *params);
 	static void SceneItemSelected(void *data, calldata_t *params);
 	static void SceneItemDeselected(void *data, calldata_t *params);
-	static void SourceLoaded(void *data, calldata_t *params);
+	static void SourceLoaded(void *data, obs_source_t *source);
 	static void SourceRemoved(void *data, calldata_t *params);
 	static void SourceActivated(void *data, calldata_t *params);
 	static void SourceDeactivated(void *data, calldata_t *params);
@@ -471,6 +475,8 @@ protected:
 	void on_actionAlwaysOnTop_triggered();
 
 	void on_transitions_currentIndexChanged(int index);
+	void on_transitionAdd_clicked();
+	void on_transitionRemove_clicked();
 	void on_transitionProps_clicked();
 
 	void on_modeSwitch_clicked();
